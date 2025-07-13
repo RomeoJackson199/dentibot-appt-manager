@@ -36,28 +36,21 @@ export function DentistDashboard() {
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
-    if (profile && dentist) {
+    if (profile) {
       fetchAppointments();
     }
-  }, [profile, dentist]);
+  }, [profile]);
 
   const fetchAppointments = async () => {
-    if (!dentist?.id) return;
+    // For Romeo's account, use Virginie's dentist ID directly
+    let dentistId = '46067bae-18f6-4769-b8e4-be48cc18d273'; // Virginie's dentist ID
+    
+    if (profile?.email !== 'romeojackson199@gmail.com' && dentist?.id) {
+      dentistId = dentist.id; // Use their own dentist ID for other users
+    }
 
     try {
       setLoading(true);
-      
-      // Special case: If Romeo logs in, show Virginie Pauwels' appointments
-      let dentistId = dentist.id;
-      console.log('Profile email:', profile?.email);
-      console.log('Original dentist ID:', dentistId);
-      
-      if (profile?.email === 'romeojackson199@gmail.com') {
-        dentistId = '46067bae-18f6-4769-b8e4-be48cc18d273'; // Virginie's dentist ID
-        console.log('Romeo detected - switching to Virginie\'s appointments:', dentistId);
-      }
-      
-      console.log('Fetching appointments for dentist ID:', dentistId);
       
       const { data, error } = await supabase
         .from('appointments')
@@ -65,9 +58,6 @@ export function DentistDashboard() {
         .eq('dentist_id', dentistId)
         .in('status', ['pending', 'confirmed'])
         .order('appointment_date', { ascending: true });
-
-      console.log('Appointments fetched:', data?.length || 0, 'appointments');
-      if (error) console.error('Appointment fetch error:', error);
 
       if (error) throw error;
       setAppointments(data || []);
