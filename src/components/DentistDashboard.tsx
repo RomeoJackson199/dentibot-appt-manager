@@ -6,10 +6,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Clock, CheckCircle, Calendar, Users } from 'lucide-react';
+import { Loader2, Clock, CheckCircle, Calendar, Users, Cloud } from 'lucide-react';
 import { AppointmentCard } from './AppointmentCard';
 import { PatientModal } from './PatientModal';
 import PatientManagement from './PatientManagement';
+import { DocumentSync } from './DocumentSync';
 
 interface Appointment {
   id: string;
@@ -239,7 +240,7 @@ export function DentistDashboard() {
       </div>
 
       <Tabs defaultValue="pending" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="pending" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Pending Requests
@@ -257,6 +258,10 @@ export function DentistDashboard() {
           <TabsTrigger value="patients" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Patient Management
+          </TabsTrigger>
+          <TabsTrigger value="documents" className="flex items-center gap-2">
+            <Cloud className="h-4 w-4" />
+            Document Sync
           </TabsTrigger>
         </TabsList>
 
@@ -314,6 +319,10 @@ export function DentistDashboard() {
 
         <TabsContent value="patients" className="space-y-4">
           <PatientManagement />
+        </TabsContent>
+
+        <TabsContent value="documents" className="space-y-4">
+          <DocumentSync />
         </TabsContent>
       </Tabs>
 

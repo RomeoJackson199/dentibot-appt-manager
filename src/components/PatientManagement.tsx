@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import TreatmentPlanForm from './TreatmentPlanForm';
 import MedicalRecordForm from './MedicalRecordForm';
 import PrescriptionForm from './PrescriptionForm';
+import { GoogleDriveUpload } from './GoogleDriveUpload';
 
 interface Patient {
   id: string;
@@ -370,14 +371,17 @@ export default function PatientManagement() {
               </TabsContent>
 
               <TabsContent value="documents" className="space-y-4">
-                <Card>
-                  <CardContent className="flex items-center justify-center h-32">
-                    <div className="text-center">
-                      <FolderOpen className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">Google Drive integration coming soon</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <GoogleDriveUpload
+                  patientId={selectedPatient.id}
+                  patientName={`${selectedPatient.first_name} ${selectedPatient.last_name}`}
+                  dentistId={dentistId}
+                  onUploadComplete={() => {
+                    toast({
+                      title: "Success",
+                      description: "Document uploaded to Google Drive successfully",
+                    });
+                  }}
+                />
               </TabsContent>
             </Tabs>
           </div>
