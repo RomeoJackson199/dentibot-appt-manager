@@ -21,6 +21,7 @@ interface Appointment {
   urgency: 'low' | 'medium' | 'high' | 'emergency';
   patient_id: string;
   duration_minutes?: number;
+  consultation_notes?: string;
 }
 
 export function DentistDashboard() {
@@ -140,7 +141,7 @@ export function DentistDashboard() {
       const { error: updateError } = await supabase
         .from('appointments')
         .update({ 
-          notes: summary,
+          consultation_notes: summary,
           status: 'completed'
         })
         .eq('id', appointmentId);

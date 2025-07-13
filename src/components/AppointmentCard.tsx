@@ -15,6 +15,7 @@ interface Appointment {
   urgency: 'low' | 'medium' | 'high' | 'emergency';
   patient_id: string;
   duration_minutes?: number;
+  consultation_notes?: string;
 }
 
 interface AppointmentCardProps {

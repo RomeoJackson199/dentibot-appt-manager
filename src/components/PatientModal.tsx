@@ -25,6 +25,7 @@ interface Appointment {
   urgency: 'low' | 'medium' | 'high' | 'emergency';
   patient_id: string;
   duration_minutes?: number;
+  consultation_notes?: string;
 }
 
 interface PatientModalProps {
@@ -54,8 +55,8 @@ export function PatientModal({
 
   useEffect(() => {
     if (appointment && open) {
-      // Pre-fill with existing notes if any
-      setSummary(appointment.notes || '');
+      // Pre-fill with existing consultation notes if any
+      setSummary(appointment.consultation_notes || '');
     }
   }, [appointment, open]);
 
