@@ -49,6 +49,9 @@ export function DentistDashboard() {
       
       // Special case: If Romeo logs in, show Virginie Pauwels' appointments
       let dentistId = dentist.id;
+      console.log('Profile email:', profile?.email);
+      console.log('Original dentist ID:', dentistId);
+      
       if (profile?.email === 'romeojackson199@gmail.com') {
         dentistId = '46067bae-18f6-4769-b8e4-be48cc18d273'; // Virginie's dentist ID
         console.log('Romeo detected - switching to Virginie\'s appointments:', dentistId);
