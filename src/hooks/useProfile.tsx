@@ -59,12 +59,25 @@ export function useProfile() {
           .from('dentists')
           .select('*')
           .eq('profile_id', profileData.id)
-          .single();
+          .maybeSingle();
 
         if (dentistError && dentistError.code !== 'PGRST116') {
           console.error('Error fetching dentist data:', dentistError);
-        } else {
+        }
+        
+        if (dentistData) {
           setDentist(dentistData);
+        } else {
+          // If no dentist record exists but user has dentist role, create one
+          const { data: newDentist, error: createError } = await supabase
+            .from('dentists')
+            .insert({ profile_id: profileData.id, is_active: true })
+            .select('*')
+            .single();
+          
+          if (!createError && newDentist) {
+            setDentist(newDentist);
+          }
         }
       }
     } catch (error: any) {
