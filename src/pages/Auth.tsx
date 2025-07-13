@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -6,9 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Stethoscope } from 'lucide-react';
-import { useEffect } from 'react';
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -24,7 +22,6 @@ const Auth = () => {
   const [signUpPassword, setSignUpPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [role, setRole] = useState<'patient' | 'dentist'>('patient');
 
   // Redirect authenticated users
   useEffect(() => {
@@ -50,7 +47,7 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    await signUp(signUpEmail, signUpPassword, firstName, lastName, role);
+    await signUp(signUpEmail, signUpPassword, firstName, lastName, 'dentist');
     
     setLoading(false);
   };
@@ -63,7 +60,7 @@ const Auth = () => {
             <Stethoscope className="h-8 w-8 text-primary mr-2" />
             <h1 className="text-2xl font-bold text-foreground">DentiBot</h1>
           </div>
-          <p className="text-muted-foreground">Professional dental appointment management</p>
+          <p className="text-muted-foreground">Professional dental practice management platform</p>
         </div>
 
         <Tabs defaultValue="signin" className="w-full">
@@ -116,9 +113,9 @@ const Auth = () => {
           <TabsContent value="signup">
             <Card>
               <CardHeader>
-                <CardTitle>Create account</CardTitle>
+                <CardTitle>Join DentiBot</CardTitle>
                 <CardDescription>
-                  Join DentiBot as a patient or dental professional
+                  Create your dentist account to start managing appointments
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -146,25 +143,13 @@ const Auth = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="role">Account Type</Label>
-                    <Select value={role} onValueChange={(value: 'patient' | 'dentist') => setRole(value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select account type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="patient">Patient</SelectItem>
-                        <SelectItem value="dentist">Dentist</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
+                    <Label htmlFor="signup-email">Professional Email</Label>
                     <Input
                       id="signup-email"
                       type="email"
                       value={signUpEmail}
                       onChange={(e) => setSignUpEmail(e.target.value)}
-                      placeholder="Enter your email"
+                      placeholder="Enter your professional email"
                       required
                     />
                   </div>
