@@ -51,7 +51,10 @@ export function DentistDashboard() {
       let dentistId = dentist.id;
       if (profile?.email === 'romeojackson199@gmail.com') {
         dentistId = '46067bae-18f6-4769-b8e4-be48cc18d273'; // Virginie's dentist ID
+        console.log('Romeo detected - switching to Virginie\'s appointments:', dentistId);
       }
+      
+      console.log('Fetching appointments for dentist ID:', dentistId);
       
       const { data, error } = await supabase
         .from('appointments')
@@ -59,6 +62,9 @@ export function DentistDashboard() {
         .eq('dentist_id', dentistId)
         .in('status', ['pending', 'confirmed'])
         .order('appointment_date', { ascending: true });
+
+      console.log('Appointments fetched:', data?.length || 0, 'appointments');
+      if (error) console.error('Appointment fetch error:', error);
 
       if (error) throw error;
       setAppointments(data || []);
