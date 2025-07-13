@@ -49,16 +49,7 @@ const Index = () => {
       </header>
       
       <main className="container mx-auto px-4 py-8">
-        {profile?.role === 'dentist' ? (
-          <DentistDashboard />
-        ) : (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold mb-4">Patient Dashboard</h2>
-            <p className="text-muted-foreground">
-              Patient features coming soon! This platform is currently focused on dentist appointment management.
-            </p>
-          </div>
-        )}
+        <DentistDashboard />
       </main>
     </div>
   );
