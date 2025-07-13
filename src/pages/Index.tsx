@@ -49,7 +49,19 @@ const Index = () => {
       </header>
       
       <main className="container mx-auto px-4 py-8">
-        <DentistDashboard />
+        {profile?.role === 'dentist' ? (
+          <DentistDashboard />
+        ) : (
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold mb-4">Patient Portal</h2>
+            <p className="text-muted-foreground mb-4">
+              Welcome to DentiBot! Your patient portal for managing dental appointments.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Patient features are coming soon. You can book appointments through our chatbot system.
+            </p>
+          </div>
+        )}
       </main>
     </div>
   );
