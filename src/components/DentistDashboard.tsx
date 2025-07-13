@@ -46,10 +46,17 @@ export function DentistDashboard() {
 
     try {
       setLoading(true);
+      
+      // Special case: If Romeo logs in, show Virginie Pauwels' appointments
+      let dentistId = dentist.id;
+      if (profile?.email === 'romeojackson199@gmail.com') {
+        dentistId = '46067bae-18f6-4769-b8e4-be48cc18d273'; // Virginie's dentist ID
+      }
+      
       const { data, error } = await supabase
         .from('appointments')
         .select('*')
-        .eq('dentist_id', dentist.id)
+        .eq('dentist_id', dentistId)
         .in('status', ['pending', 'confirmed'])
         .order('appointment_date', { ascending: true });
 
@@ -196,7 +203,11 @@ export function DentistDashboard() {
         <div>
           <h2 className="text-2xl font-bold">Dentist Dashboard</h2>
           <p className="text-muted-foreground">
-            Welcome, Dr. {profile.first_name} {profile.last_name}
+            {profile.email === 'romeojackson199@gmail.com' ? (
+              <>Welcome, Dr. {profile.first_name} {profile.last_name} - Managing Virginie Pauwels' Practice</>
+            ) : (
+              <>Welcome, Dr. {profile.first_name} {profile.last_name}</>
+            )}
           </p>
         </div>
         <div className="flex gap-4">
