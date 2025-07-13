@@ -6,9 +6,10 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Clock, CheckCircle, Calendar } from 'lucide-react';
+import { Loader2, Clock, CheckCircle, Calendar, Users } from 'lucide-react';
 import { AppointmentCard } from './AppointmentCard';
 import { PatientModal } from './PatientModal';
+import PatientManagement from './PatientManagement';
 
 interface Appointment {
   id: string;
@@ -39,6 +40,22 @@ export function DentistDashboard() {
     if (profile) {
       fetchAppointments();
     }
+  }, [profile]);
+
+  // Fix for dashboard reloading every 2 minutes - disable auto-refresh
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    // Only set up polling if explicitly needed (commented out to prevent auto-reload)
+    // interval = setInterval(() => {
+    //   if (profile) {
+    //     fetchAppointments();
+    //   }
+    // }, 120000); // 2 minutes
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [profile]);
 
   const fetchAppointments = async () => {
@@ -222,7 +239,7 @@ export function DentistDashboard() {
       </div>
 
       <Tabs defaultValue="pending" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="pending" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Pending Requests
@@ -236,6 +253,10 @@ export function DentistDashboard() {
             {acceptedAppointments.length > 0 && (
               <Badge variant="secondary">{acceptedAppointments.length}</Badge>
             )}
+          </TabsTrigger>
+          <TabsTrigger value="patients" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Patient Management
           </TabsTrigger>
         </TabsList>
 
@@ -289,6 +310,10 @@ export function DentistDashboard() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="patients" className="space-y-4">
+          <PatientManagement />
         </TabsContent>
       </Tabs>
 
