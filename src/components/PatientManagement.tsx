@@ -8,12 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Search, Plus, FileText, Pill, FolderOpen, Pencil } from 'lucide-react';
+import { Search, Plus, FileText, Pill, FolderOpen, Pencil, StickyNote } from 'lucide-react';
 import MedicalDossier from './MedicalDossier';
 import { useToast } from '@/hooks/use-toast';
 import TreatmentPlanForm from './TreatmentPlanForm';
 import MedicalRecordForm from './MedicalRecordForm';
 import PrescriptionForm from './PrescriptionForm';
+import PatientNotes from './PatientNotes';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface Patient {
   id: string;
@@ -215,14 +217,21 @@ export default function PatientManagement() {
                 }`}
                 onClick={() => setSelectedPatient(patient)}
               >
-                <CardContent className="p-3">
-                  <h3 className="font-medium">
-                    {patient.first_name} {patient.last_name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{patient.email}</p>
-                  {patient.phone && (
-                    <p className="text-xs text-muted-foreground">{patient.phone}</p>
-                  )}
+                <CardContent className="p-3 flex items-center gap-3">
+                  <Avatar>
+                    <AvatarFallback>
+                      {patient.first_name.charAt(0)}{patient.last_name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="font-medium">
+                      {patient.first_name} {patient.last_name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">{patient.email}</p>
+                    {patient.phone && (
+                      <p className="text-xs text-muted-foreground">{patient.phone}</p>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -310,6 +319,10 @@ export default function PatientManagement() {
                 <TabsTrigger value="treatment-plans">Treatment Plans</TabsTrigger>
                 <TabsTrigger value="medical-records">Medical Records</TabsTrigger>
                 <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
+                <TabsTrigger value="notes" className="flex items-center gap-2">
+                  <StickyNote className="h-4 w-4" />
+                  Notes
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="dossier" className="space-y-4">
@@ -403,6 +416,10 @@ export default function PatientManagement() {
                     </CardContent>
                   </Card>
                 ))}
+              </TabsContent>
+
+              <TabsContent value="notes" className="space-y-4">
+                <PatientNotes patientId={selectedPatient.id} dentistId={dentistId} />
               </TabsContent>
 
             </Tabs>
