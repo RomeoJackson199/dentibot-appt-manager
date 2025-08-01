@@ -85,10 +85,7 @@ export default function PatientManagement() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<'treatment' | 'record' | 'prescription' | 'appointment'>('treatment');
 
-  let dentistId = '46067bae-18f6-4769-b8e4-be48cc18d273';
-  if (profile?.email !== 'romeojackson199@gmail.com' && dentist?.id) {
-    dentistId = dentist.id;
-  }
+  const dentistId = dentist?.id;
 
   useEffect(() => {
     if (profile) {
@@ -103,8 +100,9 @@ export default function PatientManagement() {
   }, [selectedPatient]);
 
   const fetchPatients = async () => {
+    if (!dentistId) return;
     try {
-      let dentistIdParam = dentistId;
+      const dentistIdParam = dentistId;
       // Get patients from appointments
       const { data: appointmentPatients, error } = await supabase
         .from('appointments')
@@ -148,6 +146,7 @@ export default function PatientManagement() {
   };
 
   const fetchPatientData = async (patientId: string) => {
+    if (!dentistId) return;
     try {
       const dentistIdParam = dentistId;
       // Fetch treatment plans
@@ -234,6 +233,14 @@ export default function PatientManagement() {
 
   if (loading) {
     return <div className="flex justify-center items-center h-64">Loading patients...</div>;
+  }
+
+  if (!dentistId) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        Dentist information missing
+      </div>
+    );
   }
 
   return (

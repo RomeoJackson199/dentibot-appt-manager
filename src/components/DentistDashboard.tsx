@@ -68,12 +68,8 @@ export function DentistDashboard() {
   }, [profile]);
 
   const fetchAppointments = async () => {
-    // For Romeo's account, use Virginie's dentist ID directly
-    let dentistId = '46067bae-18f6-4769-b8e4-be48cc18d273'; // Virginie's dentist ID
-    
-    if (profile?.email !== 'romeojackson199@gmail.com' && dentist?.id) {
-      dentistId = dentist.id; // Use their own dentist ID for other users
-    }
+    if (!dentist?.id) return;
+    const dentistId = dentist.id;
 
     try {
       setLoading(true);

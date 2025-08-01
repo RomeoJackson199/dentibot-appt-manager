@@ -17,6 +17,7 @@ interface Appointment {
   reason?: string;
   notes?: string;
   patient_id: string;
+  status: string;
 }
 
 interface Document {
@@ -92,7 +93,6 @@ export function Agenda() {
   const dailyAppointments = selectedDate
     ? appointments.filter(
         (apt) =>
-          apt.status === 'confirmed' &&
           new Date(apt.appointment_date) >= startOfDay(selectedDate) &&
           new Date(apt.appointment_date) <= endOfDay(selectedDate)
       )
@@ -107,18 +107,20 @@ export function Agenda() {
   }, [selectedDate]);
 
   const fetchAppointments = async () => {
-    if (!profile) return;
-    setLoading(true);
-
-    let dentistId = '46067bae-18f6-4769-b8e4-be48cc18d273';
-    if (profile.email !== 'romeojackson199@gmail.com' && dentist?.id) {
-      dentistId = dentist.id;
+    if (!profile || !dentist?.id) {
+      toast({
+        title: 'Error',
+        description: 'Dentist information missing',
+        variant: 'destructive',
+      });
+      return;
     }
+    setLoading(true);
 
     const { data, error } = await supabase
       .from('appointments')
       .select('*')
-      .eq('dentist_id', dentistId)
+      .eq('dentist_id', dentist.id)
       .in('status', ['pending', 'confirmed']);
 
     if (error) {
@@ -185,9 +187,18 @@ export function Agenda() {
                           </p>
                         )}
                       </div>
-                      <Badge variant="secondary">
-                        {format(new Date(apt.appointment_date), 'p')}
-                      </Badge>
+                      <div className="flex gap-2">
+                        <Badge variant="secondary">
+                          {format(new Date(apt.appointment_date), 'p')}
+                        </Badge>
+                        <Badge
+                          variant={
+                            apt.status === 'confirmed' ? 'default' : 'secondary'
+                          }
+                        >
+                          {apt.status}
+                        </Badge>
+                      </div>
                     </div>
                     {apt.notes && (
                       <p className="text-xs text-muted-foreground">

@@ -21,7 +21,7 @@ export default function AppointmentForm({ patientId, dentistId, treatmentPlans, 
     appointment_date: new Date().toISOString().slice(0,16),
     reason: '',
     notes: '',
-    status: 'confirmed',
+    status: 'pending',
     treatment_plan_id: ''
   });
 
