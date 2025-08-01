@@ -31,7 +31,7 @@ export default function PatientNotes({ patientId, dentistId }: PatientNotesProps
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('patient_notes')
+        .from('notes')
         .select('*')
         .eq('patient_id', patientId)
         .eq('dentist_id', dentistId)
@@ -55,7 +55,7 @@ export default function PatientNotes({ patientId, dentistId }: PatientNotesProps
     if (!newNote.trim()) return;
     try {
       const { data, error } = await supabase
-        .from('patient_notes')
+        .from('notes')
         .insert({
           patient_id: patientId,
           dentist_id: dentistId,
