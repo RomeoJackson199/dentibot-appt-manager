@@ -104,6 +104,15 @@ export function AppointmentCard({
             <>
               <Button
                 size="sm"
+                variant="outline"
+                onClick={() => onViewPatient?.(appointment)}
+                className="flex items-center gap-1"
+              >
+                <Eye className="h-4 w-4" />
+                View
+              </Button>
+              <Button
+                size="sm"
                 onClick={() => onAccept?.(appointment.id)}
                 disabled={loading}
                 className="flex items-center gap-1"

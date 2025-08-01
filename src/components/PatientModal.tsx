@@ -21,6 +21,12 @@ interface Appointment {
   appointment_date: string;
   reason?: string;
   notes?: string;
+  symptoms?: {
+    pain_level: number | null;
+    has_swelling: boolean | null;
+    has_bleeding: boolean | null;
+    duration_symptoms: string | null;
+  } | null;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   urgency: 'low' | 'medium' | 'high' | 'emergency';
   patient_id: string;
@@ -154,21 +160,45 @@ export function PatientModal({
             </div>
           )}
 
+          {appointment.symptoms && (
+            <div>
+              <Label className="text-sm font-medium">Symptoms</Label>
+              <ul className="text-sm text-muted-foreground mt-1 ml-4 list-disc space-y-1">
+                {appointment.symptoms.pain_level !== null && (
+                  <li>Pain level: {appointment.symptoms.pain_level}</li>
+                )}
+                {appointment.symptoms.has_swelling !== null && (
+                  <li>
+                    {appointment.symptoms.has_swelling ? 'Swelling present' : 'No swelling'}
+                  </li>
+                )}
+                {appointment.symptoms.has_bleeding !== null && (
+                  <li>
+                    {appointment.symptoms.has_bleeding ? 'Bleeding present' : 'No bleeding'}
+                  </li>
+                )}
+                {appointment.symptoms.duration_symptoms && (
+                  <li>Duration: {appointment.symptoms.duration_symptoms}</li>
+                )}
+              </ul>
+            </div>
+          )}
+
           <Separator />
 
-          {/* Consultation Summary */}
+          {/* Dentist Notes */}
           <div>
             <Label htmlFor="summary" className="text-sm font-medium">
-              Consultation Summary
+              Dentist Notes
             </Label>
             <p className="text-xs text-muted-foreground mb-2">
-              Document what happened during the consultation, treatments provided, and any follow-up required.
+              Add private notes related to this appointment. These notes are visible only to you.
             </p>
             <Textarea
               id="summary"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
-              placeholder="Enter consultation summary, treatments provided, recommendations, and any follow-up needed..."
+              placeholder="Enter any observations or reminders for this appointment..."
               className="min-h-[120px]"
               disabled={saving}
             />
@@ -192,7 +222,7 @@ export function PatientModal({
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Save Summary
+                  Save Notes
                 </>
               )}
             </Button>
