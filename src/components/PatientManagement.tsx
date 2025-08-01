@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Search, Plus, FileText, Pill } from 'lucide-react';
+import { Search, Plus, FileText, Pill, FolderOpen } from 'lucide-react';
+import MedicalDossier from './MedicalDossier';
 import { useToast } from '@/hooks/use-toast';
 import TreatmentPlanForm from './TreatmentPlanForm';
 import MedicalRecordForm from './MedicalRecordForm';
@@ -68,7 +69,7 @@ export default function PatientManagement() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<'treatment' | 'record' | 'prescription'>('treatment');
 
-  const dentistId = '46067bae-18f6-4769-b8e4-be48cc18d273'; // Virginie's dentist ID
+  const dentistId = '2014080c-d497-4ff9-98de-ccc5982ed94e'; // Current dentist ID
 
   useEffect(() => {
     if (profile) {
@@ -288,12 +289,23 @@ export default function PatientManagement() {
               </div>
             </div>
 
-            <Tabs defaultValue="treatment-plans" className="w-full">
+            <Tabs defaultValue="dossier" className="w-full">
               <TabsList>
+                <TabsTrigger value="dossier" className="flex items-center gap-2">
+                  <FolderOpen className="h-4 w-4" />
+                  Medical Dossier
+                </TabsTrigger>
                 <TabsTrigger value="treatment-plans">Treatment Plans</TabsTrigger>
                 <TabsTrigger value="medical-records">Medical Records</TabsTrigger>
                 <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="dossier" className="space-y-4">
+                <MedicalDossier 
+                  patientId={selectedPatient.id} 
+                  dentistId={dentistId} 
+                />
+              </TabsContent>
 
               <TabsContent value="treatment-plans" className="space-y-4">
                 {treatmentPlans.map((plan) => (

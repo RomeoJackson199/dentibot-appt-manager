@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import AIAssistant from './AIAssistant';
 
 interface PrescriptionFormProps {
   patientId: string;
@@ -154,13 +155,20 @@ export default function PrescriptionForm({ patientId, dentistId, onSuccess }: Pr
 
         <div className="col-span-2">
           <Label htmlFor="instructions">Special Instructions</Label>
-          <Textarea
-            id="instructions"
-            value={formData.instructions}
-            onChange={(e) => handleInputChange('instructions', e.target.value)}
-            rows={3}
-            placeholder="Take with food, avoid alcohol, etc."
-          />
+          <div className="space-y-2">
+            <Textarea
+              id="instructions"
+              value={formData.instructions}
+              onChange={(e) => handleInputChange('instructions', e.target.value)}
+              rows={3}
+              placeholder="Take with food, avoid alcohol, etc."
+            />
+            <AIAssistant
+              currentText={formData.instructions}
+              onTextRewrite={(newText) => handleInputChange('instructions', newText)}
+              context="Prescription instructions"
+            />
+          </div>
         </div>
       </div>
 
