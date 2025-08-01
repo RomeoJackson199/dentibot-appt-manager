@@ -217,8 +217,8 @@ export function DentistDashboard() {
   const acceptedAppointments = appointments.filter(apt => apt.status === 'confirmed');
 
   const filterMatch = (apt: Appointment) =>
-    apt.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (apt.reason ? apt.reason.toLowerCase().includes(searchTerm.toLowerCase()) : false);
+    (apt.patient_name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+    (apt.reason?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
 
   const filteredPending = pendingAppointments.filter(filterMatch);
   const filteredAccepted = acceptedAppointments.filter(filterMatch);
