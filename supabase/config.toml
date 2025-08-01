@@ -1,1 +1,53 @@
 project_id = "gjvxcisbaxhhblhsytar"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[graphql]
+enabled = true
+port = 54329
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[inbound_smtp]
+enabled = false
+port = 54330
+mailhog_enabled = true
+
+[storage]
+enabled = true
+port = 54325
+file_size_limit = "50MB"
+s3_enabled = false
+
+[auth]
+enabled = true
+port = 54324
+external_url = "http://localhost:3000"
+additional_redirect_urls = ["https://gjvxcisbaxhhblhsytar.supabase.co"]
+jwt_expiry = 3600
+enable_manual_linking = false
+enable_signup = true
+minimum_password_length = 6
+
+[edge_runtime]
+enabled = true
+port = 54326
+inspector_port = 5432
+
+[functions.google-drive-sync]
+verify_jwt = false
+
+[functions.ai-text-rewriter]
+verify_jwt = false
+
+[analytics]
+enabled = false
+port = 54327
+vector_port = 54328
+backend = "postgres"
