@@ -56,7 +56,7 @@ interface Prescription {
 
 export default function PatientManagement() {
   const { user } = useAuth();
-  const { profile } = useProfile();
+  const { profile, dentist } = useProfile();
   const { toast } = useToast();
   
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -69,7 +69,10 @@ export default function PatientManagement() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<'treatment' | 'record' | 'prescription'>('treatment');
 
-  const dentistId = '2014080c-d497-4ff9-98de-ccc5982ed94e'; // Current dentist ID
+  let dentistId = '46067bae-18f6-4769-b8e4-be48cc18d273';
+  if (profile?.email !== 'romeojackson199@gmail.com' && dentist?.id) {
+    dentistId = dentist.id;
+  }
 
   useEffect(() => {
     if (profile) {
@@ -85,6 +88,7 @@ export default function PatientManagement() {
 
   const fetchPatients = async () => {
     try {
+      let dentistIdParam = dentistId;
       // Get patients from appointments
       const { data: appointmentPatients, error } = await supabase
         .from('appointments')
@@ -102,7 +106,7 @@ export default function PatientManagement() {
             medical_history
           )
         `)
-        .eq('dentist_id', dentistId);
+        .eq('dentist_id', dentistIdParam);
 
       if (error) throw error;
 
@@ -129,12 +133,13 @@ export default function PatientManagement() {
 
   const fetchPatientData = async (patientId: string) => {
     try {
+      const dentistIdParam = dentistId;
       // Fetch treatment plans
       const { data: treatmentData } = await supabase
         .from('treatment_plans')
         .select('*')
         .eq('patient_id', patientId)
-        .eq('dentist_id', dentistId)
+        .eq('dentist_id', dentistIdParam)
         .order('created_at', { ascending: false });
 
       // Fetch medical records
@@ -142,7 +147,7 @@ export default function PatientManagement() {
         .from('medical_records')
         .select('*')
         .eq('patient_id', patientId)
-        .eq('dentist_id', dentistId)
+        .eq('dentist_id', dentistIdParam)
         .order('visit_date', { ascending: false });
 
       // Fetch prescriptions
@@ -150,7 +155,7 @@ export default function PatientManagement() {
         .from('prescriptions')
         .select('*')
         .eq('patient_id', patientId)
-        .eq('dentist_id', dentistId)
+        .eq('dentist_id', dentistIdParam)
         .order('prescribed_date', { ascending: false });
 
       setTreatmentPlans(treatmentData || []);
