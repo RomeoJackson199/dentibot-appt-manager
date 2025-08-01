@@ -6,7 +6,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Clock, CheckCircle, Calendar, Users } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Loader2, Clock, CheckCircle, Calendar, Users, Search } from 'lucide-react';
 import { AppointmentCard } from './AppointmentCard';
 import { PatientModal } from './PatientModal';
 import PatientManagement from './PatientManagement';
@@ -36,6 +37,7 @@ export function DentistDashboard() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (profile) {
@@ -214,9 +216,16 @@ export function DentistDashboard() {
   const pendingAppointments = appointments.filter(apt => apt.status === 'pending');
   const acceptedAppointments = appointments.filter(apt => apt.status === 'confirmed');
 
+  const filterMatch = (apt: Appointment) =>
+    apt.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (apt.reason ? apt.reason.toLowerCase().includes(searchTerm.toLowerCase()) : false);
+
+  const filteredPending = pendingAppointments.filter(filterMatch);
+  const filteredAccepted = acceptedAppointments.filter(filterMatch);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-2xl font-bold">Dentist Dashboard</h2>
           <p className="text-muted-foreground">
@@ -227,14 +236,25 @@ export function DentistDashboard() {
             )}
           </p>
         </div>
-        <div className="flex gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-orange-600">{pendingAppointments.length}</div>
-            <div className="text-sm text-muted-foreground">Pending</div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600">{pendingAppointments.length}</div>
+              <div className="text-sm text-muted-foreground">Pending</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{acceptedAppointments.length}</div>
+              <div className="text-sm text-muted-foreground">Accepted</div>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{acceptedAppointments.length}</div>
-            <div className="text-sm text-muted-foreground">Accepted</div>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search appointments..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
           </div>
         </div>
       </div>
@@ -278,7 +298,7 @@ export function DentistDashboard() {
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {pendingAppointments.map((appointment) => (
+              {filteredPending.map((appointment) => (
                 <AppointmentCard
                   key={appointment.id}
                   appointment={appointment}
@@ -305,7 +325,7 @@ export function DentistDashboard() {
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {acceptedAppointments.map((appointment) => (
+              {filteredAccepted.map((appointment) => (
                 <AppointmentCard
                   key={appointment.id}
                   appointment={appointment}
