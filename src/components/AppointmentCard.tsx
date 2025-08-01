@@ -34,6 +34,13 @@ const urgencyColors = {
   emergency: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
 };
 
+const urgencyBorders = {
+  low: 'border-green-300',
+  medium: 'border-yellow-300',
+  high: 'border-orange-400',
+  emergency: 'border-red-500'
+};
+
 export function AppointmentCard({ 
   appointment, 
   type, 
@@ -45,7 +52,7 @@ export function AppointmentCard({
   const appointmentDate = new Date(appointment.appointment_date);
   
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className={`hover:shadow-md transition-shadow border-l-4 ${urgencyBorders[appointment.urgency]}`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
