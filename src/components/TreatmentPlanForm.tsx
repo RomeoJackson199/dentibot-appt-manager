@@ -6,7 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import AIAssistant from './AIAssistant';
 
 interface TreatmentPlanFormProps {
   patientId: string;
@@ -93,36 +92,22 @@ export default function TreatmentPlanForm({ patientId, dentistId, onSuccess }: T
 
         <div className="col-span-2">
           <Label htmlFor="diagnosis">Diagnosis</Label>
-          <div className="space-y-2">
-            <Textarea
-              id="diagnosis"
-              value={formData.diagnosis}
-              onChange={(e) => handleInputChange('diagnosis', e.target.value)}
-              rows={3}
-            />
-            <AIAssistant
-              currentText={formData.diagnosis}
-              onTextRewrite={(newText) => handleInputChange('diagnosis', newText)}
-              context="Medical diagnosis"
-            />
-          </div>
+          <Textarea
+            id="diagnosis"
+            value={formData.diagnosis}
+            onChange={(e) => handleInputChange('diagnosis', e.target.value)}
+            rows={3}
+          />
         </div>
 
         <div className="col-span-2">
-                  <Label htmlFor="description">Description</Label>
-                  <div className="space-y-2">
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => handleInputChange('description', e.target.value)}
-                      rows={3}
-                    />
-                    <AIAssistant
-                      currentText={formData.description}
-                      onTextRewrite={(newText) => handleInputChange('description', newText)}
-                      context="Treatment plan description"
-                    />
-                  </div>
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) => handleInputChange('description', e.target.value)}
+            rows={3}
+          />
         </div>
 
         <div>
@@ -199,20 +184,13 @@ export default function TreatmentPlanForm({ patientId, dentistId, onSuccess }: T
         </div>
 
         <div className="col-span-2">
-                  <Label htmlFor="notes">Notes</Label>
-                  <div className="space-y-2">
-                    <Textarea
-                      id="notes"
-                      value={formData.notes}
-                      onChange={(e) => handleInputChange('notes', e.target.value)}
-                      rows={3}
-                    />
-                    <AIAssistant
-                      currentText={formData.notes}
-                      onTextRewrite={(newText) => handleInputChange('notes', newText)}
-                      context="Treatment plan notes"
-                    />
-                  </div>
+          <Label htmlFor="notes">Notes</Label>
+          <Textarea
+            id="notes"
+            value={formData.notes}
+            onChange={(e) => handleInputChange('notes', e.target.value)}
+            rows={3}
+          />
         </div>
       </div>
 

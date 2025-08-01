@@ -6,7 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import AIAssistant from './AIAssistant';
 
 interface MedicalRecordFormProps {
   patientId: string;
@@ -115,56 +114,35 @@ export default function MedicalRecordForm({ patientId, dentistId, onSuccess }: M
 
         <div className="col-span-2">
           <Label htmlFor="description">Description</Label>
-          <div className="space-y-2">
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              rows={3}
-              placeholder="General description of the visit or procedure"
-            />
-            <AIAssistant
-              currentText={formData.description}
-              onTextRewrite={(newText) => handleInputChange('description', newText)}
-              context="Medical record description"
-            />
-          </div>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) => handleInputChange('description', e.target.value)}
+            rows={3}
+            placeholder="General description of the visit or procedure"
+          />
         </div>
 
         <div className="col-span-2">
           <Label htmlFor="findings">Clinical Findings</Label>
-          <div className="space-y-2">
-            <Textarea
-              id="findings"
-              value={formData.findings}
-              onChange={(e) => handleInputChange('findings', e.target.value)}
-              rows={3}
-              placeholder="Detailed clinical observations and findings"
-            />
-            <AIAssistant
-              currentText={formData.findings}
-              onTextRewrite={(newText) => handleInputChange('findings', newText)}
-              context="Medical findings"
-            />
-          </div>
+          <Textarea
+            id="findings"
+            value={formData.findings}
+            onChange={(e) => handleInputChange('findings', e.target.value)}
+            rows={3}
+            placeholder="Detailed clinical observations and findings"
+          />
         </div>
 
         <div className="col-span-2">
           <Label htmlFor="recommendations">Recommendations</Label>
-          <div className="space-y-2">
-            <Textarea
-              id="recommendations"
-              value={formData.recommendations}
-              onChange={(e) => handleInputChange('recommendations', e.target.value)}
-              rows={3}
-              placeholder="Treatment recommendations and follow-up instructions"
-            />
-            <AIAssistant
-              currentText={formData.recommendations}
-              onTextRewrite={(newText) => handleInputChange('recommendations', newText)}
-              context="Medical recommendations"
-            />
-          </div>
+          <Textarea
+            id="recommendations"
+            value={formData.recommendations}
+            onChange={(e) => handleInputChange('recommendations', e.target.value)}
+            rows={3}
+            placeholder="Treatment recommendations and follow-up instructions"
+          />
         </div>
       </div>
 
