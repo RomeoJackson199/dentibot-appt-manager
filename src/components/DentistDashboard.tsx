@@ -203,6 +203,40 @@ export function DentistDashboard() {
     }
   };
 
+  const handleCompleteAppointment = async (
+    appointmentId: string,
+    summary: string
+  ) => {
+    try {
+      const { error: updateError } = await supabase
+        .from('appointments')
+        .update({ status: 'completed', consultation_notes: summary })
+        .eq('id', appointmentId);
+
+      if (updateError) throw updateError;
+
+      setAppointments(prev =>
+        prev.map(apt =>
+          apt.id === appointmentId
+            ? { ...apt, status: 'completed' as const, consultation_notes: summary }
+            : apt
+        )
+      );
+
+      toast({
+        title: 'Appointment Completed',
+        description: 'Marked appointment as completed.',
+      });
+    } catch (error: any) {
+      console.error('Error completing appointment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to complete appointment',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (profileLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -366,6 +400,7 @@ export function DentistDashboard() {
           setSelectedAppointment(null);
         }}
         onSaveSummary={handleSaveSummary}
+        onComplete={handleCompleteAppointment}
       />
     </div>
   );

@@ -39,6 +39,7 @@ interface PatientModalProps {
   open: boolean;
   onClose: () => void;
   onSaveSummary: (appointmentId: string, summary: string) => Promise<void>;
+  onComplete: (appointmentId: string, summary: string) => Promise<void>;
   loading?: boolean;
 }
 
@@ -75,6 +76,28 @@ export function PatientModal({
       onClose();
     } catch (error) {
       console.error('Failed to save summary:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleComplete = async () => {
+    if (!appointment) return;
+
+    let finalSummary = summary.trim();
+    const feedback = window.prompt('How did the appointment go?');
+    if (feedback && feedback.trim()) {
+      finalSummary = finalSummary
+        ? `${finalSummary}\n\n${feedback.trim()}`
+        : feedback.trim();
+    }
+
+    setSaving(true);
+    try {
+      await onComplete(appointment.id, finalSummary);
+      onClose();
+    } catch (error) {
+      console.error('Failed to complete appointment:', error);
     } finally {
       setSaving(false);
     }
@@ -210,8 +233,8 @@ export function PatientModal({
               <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
-            <Button 
-              onClick={handleSave} 
+            <Button
+              onClick={handleSave}
               disabled={!summary.trim() || saving}
             >
               {saving ? (
@@ -225,6 +248,9 @@ export function PatientModal({
                   Save Notes
                 </>
               )}
+            </Button>
+            <Button onClick={handleComplete} disabled={saving} variant="secondary">
+              {saving ? 'Completing...' : 'Complete'}
             </Button>
           </div>
         </div>
