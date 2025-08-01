@@ -7,6 +7,8 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Separator } from '@/components/ui/separator';
 import { Calendar, FileText, Pill, Heart, User, Phone, MapPin, AlertTriangle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import TreatmentPlanSteps from './TreatmentPlanSteps';
 import { useToast } from '@/hooks/use-toast';
 
 interface Patient {
@@ -78,6 +80,8 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [nextNotes, setNextNotes] = useState('');
+  const [savingNotes, setSavingNotes] = useState(false);
   const [loading, setLoading] = useState(true);
   const dossierRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -130,12 +134,21 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
         .select('*')
         .eq('patient_id', patientId)
         .eq('dentist_id', dentistId)
-        .order('appointment_date', { ascending: false });
+        .order('appointment_date', { ascending: true });
 
       setTreatmentPlans(treatmentData || []);
       setMedicalRecords(recordData || []);
       setPrescriptions(prescriptionData || []);
       setAppointments(appointmentData || []);
+
+      const upcoming = (appointmentData || []).find(
+        (a: any) =>
+          ['pending', 'confirmed'].includes(a.status) &&
+          new Date(a.appointment_date) > new Date()
+      );
+      if (upcoming) {
+        setNextNotes(upcoming.consultation_notes || '');
+      }
 
     } catch (error: any) {
       console.error('Error fetching dossier data:', error);
@@ -161,6 +174,30 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
     pdf.save(`dossier-${patient?.last_name ?? ''}.pdf`);
   };
 
+  const handleSaveNextNotes = async (appointmentId: string) => {
+    if (!nextNotes.trim()) return;
+    setSavingNotes(true);
+    const { error } = await supabase
+      .from('appointments')
+      .update({ consultation_notes: nextNotes })
+      .eq('id', appointmentId);
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to save notes',
+        variant: 'destructive',
+      });
+    } else {
+      setAppointments((prev) =>
+        prev.map((a) =>
+          a.id === appointmentId ? { ...a, consultation_notes: nextNotes } : a
+        )
+      );
+      toast({ title: 'Notes Saved' });
+    }
+    setSavingNotes(false);
+  };
+
   if (loading) {
     return <div className="flex justify-center items-center h-64">Loading medical dossier...</div>;
   }
@@ -168,6 +205,12 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
   if (!patient) {
     return <div className="text-center text-muted-foreground">Patient not found</div>;
   }
+
+  const nextAppointment = appointments.find(
+    (apt) =>
+      ['pending', 'confirmed'].includes(apt.status) &&
+      new Date(apt.appointment_date) > new Date()
+  );
 
   return (
     <div className="space-y-4 max-h-[80vh] overflow-y-auto">
@@ -232,6 +275,78 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
         </CardContent>
       </Card>
 
+      {/* Past Prescriptions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Pill className="h-5 w-5" />
+            Past Prescriptions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {prescriptions.filter(p => p.status !== 'active').length > 0 ? (
+            <div className="space-y-3">
+              {prescriptions
+                .filter(p => p.status !== 'active')
+                .map((prescription) => (
+                  <div key={prescription.id} className="border rounded-lg p-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-medium">{prescription.medication_name}</h4>
+                      <Badge variant="secondary">{prescription.status}</Badge>
+                    </div>
+                    <p className="text-sm">
+                      {prescription.dosage} - {prescription.frequency}
+                    </p>
+                    {prescription.instructions && (
+                      <p className="text-xs text-muted-foreground">
+                        {prescription.instructions}
+                      </p>
+                    )}
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground">No past prescriptions</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {nextAppointment && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Next Appointment
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm">
+              {new Date(nextAppointment.appointment_date).toLocaleString()}
+            </p>
+            {nextAppointment.reason && (
+              <p className="text-sm text-muted-foreground">
+                {nextAppointment.reason}
+              </p>
+            )}
+            <div className="space-y-2">
+              <Textarea
+                value={nextNotes}
+                onChange={(e) => setNextNotes(e.target.value)}
+                placeholder="Add notes..."
+                rows={3}
+              />
+              <Button
+                size="sm"
+                onClick={() => handleSaveNextNotes(nextAppointment.id)}
+                disabled={savingNotes}
+              >
+                {savingNotes ? 'Saving...' : 'Save Notes'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Treatment Plans Summary */}
       <Card>
         <CardHeader>
@@ -241,7 +356,7 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
           {treatmentPlans.filter(tp => tp.status === 'active').length > 0 ? (
             <div className="space-y-3">
               {treatmentPlans.filter(tp => tp.status === 'active').map((plan) => (
-                <div key={plan.id} className="border rounded-lg p-3">
+                <div key={plan.id} className="border rounded-lg p-3 space-y-2">
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-medium">{plan.title}</h4>
                     <Badge variant={plan.priority === 'high' ? 'destructive' : 'default'}>
@@ -254,6 +369,7 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
                   {plan.estimated_cost && (
                     <p className="text-sm">Cost: €{plan.estimated_cost}</p>
                   )}
+                  <TreatmentPlanSteps planId={plan.id} />
                 </div>
               ))}
             </div>
