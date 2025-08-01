@@ -453,6 +453,7 @@ export type Database = {
           medication_name: string
           patient_id: string
           prescribed_date: string
+          end_date: string | null
           status: string
           treatment_plan_id: string | null
           updated_at: string
@@ -469,6 +470,7 @@ export type Database = {
           medication_name: string
           patient_id: string
           prescribed_date?: string
+          end_date?: string | null
           status?: string
           treatment_plan_id?: string | null
           updated_at?: string
@@ -485,6 +487,7 @@ export type Database = {
           medication_name?: string
           patient_id?: string
           prescribed_date?: string
+          end_date?: string | null
           status?: string
           treatment_plan_id?: string | null
           updated_at?: string
