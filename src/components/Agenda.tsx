@@ -94,7 +94,7 @@ export function Agenda() {
     if (selectedDate) {
       fetchAppointments(selectedDate);
     }
-  }, [selectedDate, profile]);
+  }, [selectedDate, profile, dentist]);
 
   const fetchAppointments = async (date: Date) => {
     if (!profile) return;
