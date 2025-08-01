@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Search, Plus, FileText, Pill, FolderOpen } from 'lucide-react';
+import { Search, Plus, FileText, Pill, FolderOpen, Pencil } from 'lucide-react';
 import MedicalDossier from './MedicalDossier';
 import { useToast } from '@/hooks/use-toast';
 import TreatmentPlanForm from './TreatmentPlanForm';
@@ -171,13 +171,17 @@ export default function PatientManagement() {
     patient.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const openDialog = (type: 'treatment' | 'record' | 'prescription') => {
+  const [editingData, setEditingData] = useState<any>(null);
+
+  const openDialog = (type: 'treatment' | 'record' | 'prescription', data?: any) => {
     setDialogType(type);
+    setEditingData(data || null);
     setDialogOpen(true);
   };
 
   const handleFormSuccess = () => {
     setDialogOpen(false);
+    setEditingData(null);
     if (selectedPatient) {
       fetchPatientData(selectedPatient.id);
     }
@@ -262,9 +266,9 @@ export default function PatientManagement() {
                   <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>
-                        {dialogType === 'treatment' && 'New Treatment Plan'}
-                        {dialogType === 'record' && 'New Medical Record'}
-                        {dialogType === 'prescription' && 'New Prescription'}
+                        {dialogType === 'treatment' && (editingData ? 'Edit Treatment Plan' : 'New Treatment Plan')}
+                        {dialogType === 'record' && (editingData ? 'Edit Medical Record' : 'New Medical Record')}
+                        {dialogType === 'prescription' && (editingData ? 'Edit Prescription' : 'New Prescription')}
                       </DialogTitle>
                     </DialogHeader>
                     
@@ -272,6 +276,7 @@ export default function PatientManagement() {
                       <TreatmentPlanForm
                         patientId={selectedPatient.id}
                         dentistId={dentistId}
+                        plan={editingData as any}
                         onSuccess={handleFormSuccess}
                       />
                     )}
@@ -279,6 +284,7 @@ export default function PatientManagement() {
                       <MedicalRecordForm
                         patientId={selectedPatient.id}
                         dentistId={dentistId}
+                        record={editingData as any}
                         onSuccess={handleFormSuccess}
                       />
                     )}
@@ -286,6 +292,7 @@ export default function PatientManagement() {
                       <PrescriptionForm
                         patientId={selectedPatient.id}
                         dentistId={dentistId}
+                        prescription={editingData as any}
                         onSuccess={handleFormSuccess}
                       />
                     )}
@@ -318,13 +325,16 @@ export default function PatientManagement() {
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <CardTitle className="text-lg">{plan.title}</CardTitle>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 items-center">
                           <Badge variant={plan.status === 'active' ? 'default' : 'secondary'}>
                             {plan.status}
                           </Badge>
                           <Badge variant={plan.priority === 'high' ? 'destructive' : 'outline'}>
                             {plan.priority}
                           </Badge>
+                          <Button variant="ghost" size="icon" onClick={() => openDialog('treatment', plan)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     </CardHeader>
@@ -348,7 +358,12 @@ export default function PatientManagement() {
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <CardTitle className="text-lg">{record.title}</CardTitle>
-                        <Badge variant="outline">{record.record_type}</Badge>
+                        <div className="flex gap-2 items-center">
+                          <Badge variant="outline">{record.record_type}</Badge>
+                          <Button variant="ghost" size="icon" onClick={() => openDialog('record', record)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -369,9 +384,14 @@ export default function PatientManagement() {
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <CardTitle className="text-lg">{prescription.medication_name}</CardTitle>
-                        <Badge variant={prescription.status === 'active' ? 'default' : 'secondary'}>
-                          {prescription.status}
-                        </Badge>
+                        <div className="flex gap-2 items-center">
+                          <Badge variant={prescription.status === 'active' ? 'default' : 'secondary'}>
+                            {prescription.status}
+                          </Badge>
+                          <Button variant="ghost" size="icon" onClick={() => openDialog('prescription', prescription)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>

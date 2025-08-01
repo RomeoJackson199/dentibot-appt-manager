@@ -8,22 +8,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import AIAssistant from './AIAssistant';
 
+interface MedicalRecord {
+  id?: string;
+  title: string;
+  record_type: string;
+  description?: string;
+  findings?: string;
+  recommendations?: string;
+  visit_date: string;
+}
+
 interface MedicalRecordFormProps {
   patientId: string;
   dentistId: string;
   onSuccess: () => void;
+  record?: MedicalRecord;
 }
 
-export default function MedicalRecordForm({ patientId, dentistId, onSuccess }: MedicalRecordFormProps) {
+export default function MedicalRecordForm({ patientId, dentistId, onSuccess, record }: MedicalRecordFormProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
-    record_type: 'consultation',
-    description: '',
-    findings: '',
-    recommendations: '',
-    visit_date: new Date().toISOString().split('T')[0]
+    title: record?.title || '',
+    record_type: record?.record_type || 'consultation',
+    description: record?.description || '',
+    findings: record?.findings || '',
+    recommendations: record?.recommendations || '',
+    visit_date: record?.visit_date || new Date().toISOString().split('T')[0]
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,34 +42,51 @@ export default function MedicalRecordForm({ patientId, dentistId, onSuccess }: M
     setLoading(true);
 
     try {
-      const { error } = await supabase
-        .from('medical_records')
-        .insert([
-          {
-            patient_id: patientId,
-            dentist_id: dentistId,
+      let error;
+      if (record?.id) {
+        const res = await supabase
+          .from('medical_records')
+          .update({
             title: formData.title,
             record_type: formData.record_type,
             description: formData.description,
             findings: formData.findings,
             recommendations: formData.recommendations,
             visit_date: formData.visit_date
-          }
-        ]);
+          })
+          .eq('id', record.id);
+        error = res.error;
+      } else {
+        const res = await supabase
+          .from('medical_records')
+          .insert([
+            {
+              patient_id: patientId,
+              dentist_id: dentistId,
+              title: formData.title,
+              record_type: formData.record_type,
+              description: formData.description,
+              findings: formData.findings,
+              recommendations: formData.recommendations,
+              visit_date: formData.visit_date
+            }
+          ]);
+        error = res.error;
+      }
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Medical record created successfully"
+        description: record?.id ? "Medical record updated successfully" : "Medical record created successfully"
       });
 
       onSuccess();
     } catch (error: any) {
-      console.error('Error creating medical record:', error);
+      console.error('Error saving medical record:', error);
       toast({
         title: "Error",
-        description: "Failed to create medical record",
+        description: record?.id ? "Failed to update medical record" : "Failed to create medical record",
         variant: "destructive"
       });
     } finally {
@@ -170,7 +198,7 @@ export default function MedicalRecordForm({ patientId, dentistId, onSuccess }: M
 
       <div className="flex justify-end gap-2">
         <Button type="submit" disabled={loading}>
-          {loading ? 'Creating...' : 'Create Medical Record'}
+          {loading ? (record?.id ? 'Saving...' : 'Creating...') : record?.id ? 'Update Medical Record' : 'Create Medical Record'}
         </Button>
       </div>
     </form>

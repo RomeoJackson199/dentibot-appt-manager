@@ -8,23 +8,35 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import AIAssistant from './AIAssistant';
 
+interface Prescription {
+  id?: string;
+  medication_name: string;
+  dosage: string;
+  frequency: string;
+  duration_days?: number | string | null;
+  instructions?: string;
+  status: string;
+  prescribed_date: string;
+}
+
 interface PrescriptionFormProps {
   patientId: string;
   dentistId: string;
   onSuccess: () => void;
+  prescription?: Prescription;
 }
 
-export default function PrescriptionForm({ patientId, dentistId, onSuccess }: PrescriptionFormProps) {
+export default function PrescriptionForm({ patientId, dentistId, onSuccess, prescription }: PrescriptionFormProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    medication_name: '',
-    dosage: '',
-    frequency: '',
-    duration_days: '',
-    instructions: '',
-    status: 'active',
-    prescribed_date: new Date().toISOString().split('T')[0]
+    medication_name: prescription?.medication_name || '',
+    dosage: prescription?.dosage || '',
+    frequency: prescription?.frequency || '',
+    duration_days: prescription?.duration_days ? String(prescription.duration_days) : '',
+    instructions: prescription?.instructions || '',
+    status: prescription?.status || 'active',
+    prescribed_date: prescription?.prescribed_date || new Date().toISOString().split('T')[0]
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,12 +44,11 @@ export default function PrescriptionForm({ patientId, dentistId, onSuccess }: Pr
     setLoading(true);
 
     try {
-      const { error } = await supabase
-        .from('prescriptions')
-        .insert([
-          {
-            patient_id: patientId,
-            dentist_id: dentistId,
+      let error;
+      if (prescription?.id) {
+        const res = await supabase
+          .from('prescriptions')
+          .update({
             medication_name: formData.medication_name,
             dosage: formData.dosage,
             frequency: formData.frequency,
@@ -45,22 +56,41 @@ export default function PrescriptionForm({ patientId, dentistId, onSuccess }: Pr
             instructions: formData.instructions,
             status: formData.status,
             prescribed_date: formData.prescribed_date
-          }
-        ]);
+          })
+          .eq('id', prescription.id);
+        error = res.error;
+      } else {
+        const res = await supabase
+          .from('prescriptions')
+          .insert([
+            {
+              patient_id: patientId,
+              dentist_id: dentistId,
+              medication_name: formData.medication_name,
+              dosage: formData.dosage,
+              frequency: formData.frequency,
+              duration_days: formData.duration_days ? parseInt(formData.duration_days) : null,
+              instructions: formData.instructions,
+              status: formData.status,
+              prescribed_date: formData.prescribed_date
+            }
+          ]);
+        error = res.error;
+      }
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Prescription created successfully"
+        description: prescription?.id ? "Prescription updated successfully" : "Prescription created successfully"
       });
 
       onSuccess();
     } catch (error: any) {
-      console.error('Error creating prescription:', error);
+      console.error('Error saving prescription:', error);
       toast({
         title: "Error",
-        description: "Failed to create prescription",
+        description: prescription?.id ? "Failed to update prescription" : "Failed to create prescription",
         variant: "destructive"
       });
     } finally {
@@ -174,7 +204,7 @@ export default function PrescriptionForm({ patientId, dentistId, onSuccess }: Pr
 
       <div className="flex justify-end gap-2">
         <Button type="submit" disabled={loading || !formData.medication_name || !formData.dosage || !formData.frequency}>
-          {loading ? 'Creating...' : 'Create Prescription'}
+          {loading ? (prescription?.id ? 'Saving...' : 'Creating...') : prescription?.id ? 'Update Prescription' : 'Create Prescription'}
         </Button>
       </div>
     </form>
