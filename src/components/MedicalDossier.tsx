@@ -391,6 +391,7 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
             <div className="space-y-3">
               {appointments
                 .filter(a => new Date(a.appointment_date) > new Date())
+                .sort((a, b) => new Date(a.appointment_date).getTime() - new Date(b.appointment_date).getTime())
                 .slice(0, 3)
                 .map((appointment) => (
                   <div key={appointment.id} className="border rounded-lg p-3">
@@ -427,10 +428,14 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {appointments.slice(0, 3).length > 0 ? (
+          {appointments.filter(a => new Date(a.appointment_date) <= new Date()).length > 0 ? (
             <div className="space-y-3">
-              {appointments.slice(0, 3).map((appointment) => (
-                <div key={appointment.id} className="border rounded-lg p-3">
+              {appointments
+                .filter(a => new Date(a.appointment_date) <= new Date())
+                .sort((a, b) => new Date(b.appointment_date).getTime() - new Date(a.appointment_date).getTime())
+                .slice(0, 3)
+                .map((appointment) => (
+                  <div key={appointment.id} className="border rounded-lg p-3">
                   <div className="flex justify-between items-start mb-2">
                     <p className="font-medium">
                       {new Date(appointment.appointment_date).toLocaleDateString()}
