@@ -8,12 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Search, Plus, FileText, Calendar, Pill, FolderOpen } from 'lucide-react';
+import { Search, Plus, FileText, Pill } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import TreatmentPlanForm from './TreatmentPlanForm';
 import MedicalRecordForm from './MedicalRecordForm';
 import PrescriptionForm from './PrescriptionForm';
-import { GoogleDriveUpload } from './GoogleDriveUpload';
 
 interface Patient {
   id: string;
@@ -294,7 +293,6 @@ export default function PatientManagement() {
                 <TabsTrigger value="treatment-plans">Treatment Plans</TabsTrigger>
                 <TabsTrigger value="medical-records">Medical Records</TabsTrigger>
                 <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
-                <TabsTrigger value="documents">Documents</TabsTrigger>
               </TabsList>
 
               <TabsContent value="treatment-plans" className="space-y-4">
@@ -370,19 +368,6 @@ export default function PatientManagement() {
                 ))}
               </TabsContent>
 
-              <TabsContent value="documents" className="space-y-4">
-                <GoogleDriveUpload
-                  patientId={selectedPatient.id}
-                  patientName={`${selectedPatient.first_name} ${selectedPatient.last_name}`}
-                  dentistId={dentistId}
-                  onUploadComplete={() => {
-                    toast({
-                      title: "Success",
-                      description: "Document uploaded to Google Drive successfully",
-                    });
-                  }}
-                />
-              </TabsContent>
             </Tabs>
           </div>
         ) : (
