@@ -20,6 +20,12 @@ interface Appointment {
   appointment_date: string;
   reason?: string;
   notes?: string;
+  symptoms?: {
+    pain_level: number | null;
+    has_swelling: boolean | null;
+    has_bleeding: boolean | null;
+    duration_symptoms: string | null;
+  } | null;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   urgency: 'low' | 'medium' | 'high' | 'emergency';
   patient_id: string;
@@ -74,13 +80,18 @@ export function DentistDashboard() {
       
       const { data, error } = await supabase
         .from('appointments')
-        .select('*')
+        .select('*, urgency_assessments(duration_symptoms, has_bleeding, has_swelling, pain_level)')
         .eq('dentist_id', dentistId)
         .in('status', ['pending', 'confirmed'])
         .order('appointment_date', { ascending: true });
 
       if (error) throw error;
-      setAppointments(data || []);
+
+      const mapped = (data || []).map((apt: any) => ({
+        ...apt,
+        symptoms: apt.urgency_assessments?.[0] || null,
+      }));
+      setAppointments(mapped);
     } catch (error: any) {
       console.error('Error fetching appointments:', error);
       toast({
@@ -166,20 +177,20 @@ export function DentistDashboard() {
     try {
       const { error: updateError } = await supabase
         .from('appointments')
-        .update({ 
-          consultation_notes: summary,
-          status: 'completed'
-        })
+        .update({ consultation_notes: summary })
         .eq('id', appointmentId);
 
       if (updateError) throw updateError;
 
-      // Remove from current list since it's now completed
-      setAppointments(prev => prev.filter(apt => apt.id !== appointmentId));
+      setAppointments(prev =>
+        prev.map(apt =>
+          apt.id === appointmentId ? { ...apt, consultation_notes: summary } : apt
+        )
+      );
 
       toast({
-        title: "Summary Saved",
-        description: "Consultation summary has been saved and appointment marked as completed.",
+        title: "Notes Saved",
+        description: "Your notes have been saved for this appointment.",
       });
     } catch (error: any) {
       console.error('Error saving summary:', error);
@@ -305,6 +316,7 @@ export function DentistDashboard() {
                   type="pending"
                   onAccept={handleAcceptAppointment}
                   onReject={handleRejectAppointment}
+                  onViewPatient={handleViewPatient}
                   loading={actionLoading === appointment.id}
                 />
               ))}
