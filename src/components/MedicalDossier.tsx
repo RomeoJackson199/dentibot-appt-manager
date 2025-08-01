@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { Separator } from '@/components/ui/separator';
 import { Calendar, FileText, Pill, Heart, User, Phone, MapPin, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -76,6 +79,7 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const dossierRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -145,6 +149,18 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
     }
   };
 
+  const handleDownload = async () => {
+    if (!dossierRef.current) return;
+    const canvas = await html2canvas(dossierRef.current);
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`dossier-${patient?.last_name ?? ''}.pdf`);
+  };
+
   if (loading) {
     return <div className="flex justify-center items-center h-64">Loading medical dossier...</div>;
   }
@@ -154,7 +170,11 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
   }
 
   return (
-    <div className="space-y-6 max-h-[80vh] overflow-y-auto">
+    <div className="space-y-4 max-h-[80vh] overflow-y-auto">
+      <div className="flex justify-end">
+        <Button size="sm" onClick={handleDownload}>Download PDF</Button>
+      </div>
+      <div ref={dossierRef} className="space-y-6">
       {/* Patient Header */}
       <Card>
         <CardHeader>
@@ -354,6 +374,7 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

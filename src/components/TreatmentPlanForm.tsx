@@ -8,26 +8,41 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import AIAssistant from './AIAssistant';
 
+interface TreatmentPlan {
+  id?: string;
+  title: string;
+  description?: string;
+  diagnosis?: string;
+  estimated_duration_weeks?: number | string | null;
+  estimated_cost?: number | string | null;
+  status: string;
+  priority: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  notes?: string;
+}
+
 interface TreatmentPlanFormProps {
   patientId: string;
   dentistId: string;
   onSuccess: () => void;
+  plan?: TreatmentPlan;
 }
 
-export default function TreatmentPlanForm({ patientId, dentistId, onSuccess }: TreatmentPlanFormProps) {
+export default function TreatmentPlanForm({ patientId, dentistId, onSuccess, plan }: TreatmentPlanFormProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    diagnosis: '',
-    estimated_duration_weeks: '',
-    estimated_cost: '',
-    status: 'draft',
-    priority: 'medium',
-    start_date: '',
-    end_date: '',
-    notes: ''
+    title: plan?.title || '',
+    description: plan?.description || '',
+    diagnosis: plan?.diagnosis || '',
+    estimated_duration_weeks: plan?.estimated_duration_weeks ? String(plan.estimated_duration_weeks) : '',
+    estimated_cost: plan?.estimated_cost ? String(plan.estimated_cost) : '',
+    status: plan?.status || 'draft',
+    priority: plan?.priority || 'medium',
+    start_date: plan?.start_date || '',
+    end_date: plan?.end_date || '',
+    notes: plan?.notes || ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,12 +50,11 @@ export default function TreatmentPlanForm({ patientId, dentistId, onSuccess }: T
     setLoading(true);
 
     try {
-      const { error } = await supabase
-        .from('treatment_plans')
-        .insert([
-          {
-            patient_id: patientId,
-            dentist_id: dentistId,
+      let error;
+      if (plan?.id) {
+        const res = await supabase
+          .from('treatment_plans')
+          .update({
             title: formData.title,
             description: formData.description,
             diagnosis: formData.diagnosis,
@@ -51,22 +65,44 @@ export default function TreatmentPlanForm({ patientId, dentistId, onSuccess }: T
             start_date: formData.start_date || null,
             end_date: formData.end_date || null,
             notes: formData.notes
-          }
-        ]);
+          })
+          .eq('id', plan.id);
+        error = res.error;
+      } else {
+        const res = await supabase
+          .from('treatment_plans')
+          .insert([
+            {
+              patient_id: patientId,
+              dentist_id: dentistId,
+              title: formData.title,
+              description: formData.description,
+              diagnosis: formData.diagnosis,
+              estimated_duration_weeks: formData.estimated_duration_weeks ? parseInt(formData.estimated_duration_weeks) : null,
+              estimated_cost: formData.estimated_cost ? parseFloat(formData.estimated_cost) : null,
+              status: formData.status,
+              priority: formData.priority,
+              start_date: formData.start_date || null,
+              end_date: formData.end_date || null,
+              notes: formData.notes
+            }
+          ]);
+        error = res.error;
+      }
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Treatment plan created successfully"
+        description: plan?.id ? "Treatment plan updated successfully" : "Treatment plan created successfully"
       });
 
       onSuccess();
     } catch (error: any) {
-      console.error('Error creating treatment plan:', error);
+      console.error('Error saving treatment plan:', error);
       toast({
         title: "Error",
-        description: "Failed to create treatment plan",
+        description: plan?.id ? "Failed to update treatment plan" : "Failed to create treatment plan",
         variant: "destructive"
       });
     } finally {
@@ -218,7 +254,7 @@ export default function TreatmentPlanForm({ patientId, dentistId, onSuccess }: T
 
       <div className="flex justify-end gap-2">
         <Button type="submit" disabled={loading}>
-          {loading ? 'Creating...' : 'Create Treatment Plan'}
+          {loading ? (plan?.id ? 'Saving...' : 'Creating...') : plan?.id ? 'Update Treatment Plan' : 'Create Treatment Plan'}
         </Button>
       </div>
     </form>
