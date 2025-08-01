@@ -89,14 +89,24 @@ export function Agenda() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
+  const dailyAppointments = selectedDate
+    ? appointments.filter(
+        (apt) =>
+          apt.status === 'confirmed' &&
+          new Date(apt.appointment_date) >= startOfDay(selectedDate) &&
+          new Date(apt.appointment_date) <= endOfDay(selectedDate)
+      )
+    : [];
 
   useEffect(() => {
-    if (selectedDate) {
-      fetchAppointments(selectedDate);
-    }
-  }, [selectedDate, profile, dentist]);
+    fetchAppointments();
+  }, [profile, dentist]);
 
-  const fetchAppointments = async (date: Date) => {
+  useEffect(() => {
+    // no refetch needed when date changes; appointments are filtered locally
+  }, [selectedDate]);
+
+  const fetchAppointments = async () => {
     if (!profile) return;
     setLoading(true);
 
@@ -109,9 +119,7 @@ export function Agenda() {
       .from('appointments')
       .select('*')
       .eq('dentist_id', dentistId)
-      .gte('appointment_date', startOfDay(date).toISOString())
-      .lte('appointment_date', endOfDay(date).toISOString())
-      .order('appointment_date', { ascending: true });
+      .in('status', ['pending', 'confirmed']);
 
     if (error) {
       console.error('Error fetching agenda:', error);
@@ -156,14 +164,14 @@ export function Agenda() {
             <div className="flex justify-center py-6">
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ) : appointments.length === 0 ? (
+          ) : dailyAppointments.length === 0 ? (
             <p className="text-center text-sm text-muted-foreground">
               No appointments for this date
             </p>
           ) : (
             <ScrollArea className="h-72 pr-2">
               <div className="space-y-4">
-                {appointments.map((apt) => (
+                {dailyAppointments.map((apt) => (
                   <div
                     key={apt.id}
                     className="border rounded-lg p-3 space-y-1"
