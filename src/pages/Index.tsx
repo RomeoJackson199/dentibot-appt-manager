@@ -31,7 +31,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
+      <header className="border-b border-border bg-gradient-to-r from-blue-600 to-teal-500 text-white">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center">
             <Stethoscope className="h-6 w-6 text-primary mr-2" />
