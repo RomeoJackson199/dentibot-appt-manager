@@ -15,6 +15,7 @@ interface Prescription {
   frequency: string;
   duration_days?: number | string | null;
   instructions?: string;
+  end_date?: string | null;
   status: string;
   prescribed_date: string;
 }
@@ -35,6 +36,7 @@ export default function PrescriptionForm({ patientId, dentistId, onSuccess, pres
     frequency: prescription?.frequency || '',
     duration_days: prescription?.duration_days ? String(prescription.duration_days) : '',
     instructions: prescription?.instructions || '',
+    end_date: prescription?.end_date || '',
     status: prescription?.status || 'active',
     prescribed_date: prescription?.prescribed_date || new Date().toISOString().split('T')[0]
   });
@@ -54,6 +56,7 @@ export default function PrescriptionForm({ patientId, dentistId, onSuccess, pres
             frequency: formData.frequency,
             duration_days: formData.duration_days ? parseInt(formData.duration_days) : null,
             instructions: formData.instructions,
+            end_date: formData.end_date || null,
             status: formData.status,
             prescribed_date: formData.prescribed_date
           })
@@ -71,6 +74,7 @@ export default function PrescriptionForm({ patientId, dentistId, onSuccess, pres
               frequency: formData.frequency,
               duration_days: formData.duration_days ? parseInt(formData.duration_days) : null,
               instructions: formData.instructions,
+              end_date: formData.end_date || null,
               status: formData.status,
               prescribed_date: formData.prescribed_date
             }
@@ -170,6 +174,16 @@ export default function PrescriptionForm({ patientId, dentistId, onSuccess, pres
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="end_date">End Date</Label>
+          <Input
+            id="end_date"
+            type="date"
+            value={formData.end_date}
+            onChange={(e) => handleInputChange('end_date', e.target.value)}
+          />
         </div>
 
         <div>

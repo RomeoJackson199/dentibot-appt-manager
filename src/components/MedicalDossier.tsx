@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, FileText, Pill, Heart, User, Phone, MapPin, AlertTriangle } from 'lucide-react';
+import { Calendar, FileText, Pill, Heart, User, Phone, MapPin, AlertTriangle, StopCircle } from 'lucide-react';
+import { differenceInCalendarDays, addDays, format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
 import TreatmentPlanSteps from './TreatmentPlanSteps';
 import { useToast } from '@/hooks/use-toast';
@@ -55,6 +56,7 @@ interface Prescription {
   frequency: string;
   duration_days?: number;
   instructions?: string;
+  end_date?: string | null;
   status: string;
   prescribed_date: string;
   created_at: string;
@@ -196,6 +198,22 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
       toast({ title: 'Notes Saved' });
     }
     setSavingNotes(false);
+  };
+
+  const handleStopPrescription = async (prescriptionId: string) => {
+    const endDate = new Date().toISOString().split('T')[0];
+    const { error } = await supabase
+      .from('prescriptions')
+      .update({ status: 'cancelled', end_date: endDate })
+      .eq('id', prescriptionId);
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to stop prescription', variant: 'destructive' });
+    } else {
+      setPrescriptions((prev) =>
+        prev.map((p) => (p.id === prescriptionId ? { ...p, status: 'cancelled', end_date: endDate } : p))
+      );
+      toast({ title: 'Prescription Stopped' });
+    }
   };
 
   if (loading) {
@@ -355,22 +373,38 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
         <CardContent>
           {prescriptions.filter(p => p.status === 'active').length > 0 ? (
             <div className="space-y-3">
-              {prescriptions.filter(p => p.status === 'active').map((prescription) => (
-                <div key={prescription.id} className="border rounded-lg p-3">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-medium">{prescription.medication_name}</h4>
-                    <Badge>{prescription.status}</Badge>
-                  </div>
-                  <p className="text-sm">
-                    {prescription.dosage} - {prescription.frequency}
-                  </p>
-                  {prescription.instructions && (
-                    <p className="text-xs text-muted-foreground">
-                      {prescription.instructions}
-                    </p>
-                  )}
-                </div>
-              ))}
+              {prescriptions
+                .filter(p => p.status === 'active')
+                .map((prescription) => {
+                  const daysTotal = prescription.duration_days ?? 0;
+                  const daysElapsed = differenceInCalendarDays(new Date(), new Date(prescription.prescribed_date)) + 1;
+                  return (
+                    <div key={prescription.id} className="border rounded-lg p-3">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium">{prescription.medication_name}</h4>
+                        <div className="flex gap-2 items-center">
+                          <Badge>{prescription.status}</Badge>
+                          <Button variant="ghost" size="icon" onClick={() => handleStopPrescription(prescription.id)}>
+                            <StopCircle className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-sm">
+                        {prescription.dosage} - {prescription.frequency}
+                      </p>
+                      {daysTotal > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Day {Math.min(daysElapsed, daysTotal)} of {daysTotal}
+                        </p>
+                      )}
+                      {prescription.instructions && (
+                        <p className="text-xs text-muted-foreground">
+                          {prescription.instructions}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           ) : (
             <p className="text-muted-foreground">No active prescriptions</p>
@@ -485,6 +519,9 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
                     </div>
                     <p className="text-sm">
                       {prescription.dosage} - {prescription.frequency}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {prescription.prescribed_date} - {prescription.end_date || (prescription.duration_days ? format(addDays(new Date(prescription.prescribed_date), prescription.duration_days), 'yyyy-MM-dd') : '?')}
                     </p>
                     {prescription.instructions && (
                       <p className="text-xs text-muted-foreground">

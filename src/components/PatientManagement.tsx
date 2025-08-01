@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Search, Plus, FileText, Pill, FolderOpen, Pencil, StickyNote, Calendar } from 'lucide-react';
+import { Search, Plus, FileText, Pill, FolderOpen, Pencil, StickyNote, Calendar, StopCircle } from 'lucide-react';
+import { differenceInCalendarDays, addDays, format } from 'date-fns';
 import MedicalDossier from './MedicalDossier';
 import { useToast } from '@/hooks/use-toast';
 import TreatmentPlanForm from './TreatmentPlanForm';
@@ -53,6 +54,8 @@ interface Prescription {
   medication_name: string;
   dosage: string;
   frequency: string;
+  duration_days?: number;
+  end_date?: string | null;
   status: string;
   prescribed_date: string;
 }
@@ -202,6 +205,22 @@ export default function PatientManagement() {
     setDialogType(type);
     setEditingData(data || null);
     setDialogOpen(true);
+  };
+
+  const handleStopPrescription = async (prescriptionId: string) => {
+    const endDate = new Date().toISOString().split('T')[0];
+    const { error } = await supabase
+      .from('prescriptions')
+      .update({ status: 'cancelled', end_date: endDate })
+      .eq('id', prescriptionId);
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to stop prescription', variant: 'destructive' });
+    } else {
+      setPrescriptions((prev) =>
+        prev.map((p) => (p.id === prescriptionId ? { ...p, status: 'cancelled', end_date: endDate } : p))
+      );
+      toast({ title: 'Prescription Stopped' });
+    }
   };
 
   const handleFormSuccess = () => {
@@ -426,30 +445,49 @@ export default function PatientManagement() {
               </TabsContent>
 
               <TabsContent value="prescriptions" className="space-y-4">
-                {prescriptions.map((prescription) => (
-                  <Card key={prescription.id}>
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-lg">{prescription.medication_name}</CardTitle>
-                        <div className="flex gap-2 items-center">
-                          <Badge variant={prescription.status === 'active' ? 'default' : 'secondary'}>
-                            {prescription.status}
-                          </Badge>
-                          <Button variant="ghost" size="icon" onClick={() => openDialog('prescription', prescription)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
+              {prescriptions.map((prescription) => {
+                  const daysTotal = prescription.duration_days ?? 0;
+                  const daysElapsed = differenceInCalendarDays(new Date(), new Date(prescription.prescribed_date)) + 1;
+                  return (
+                    <Card key={prescription.id}>
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <CardTitle className="text-lg">{prescription.medication_name}</CardTitle>
+                          <div className="flex gap-2 items-center">
+                            <Badge variant={prescription.status === 'active' ? 'default' : 'secondary'}>
+                              {prescription.status}
+                            </Badge>
+                            {prescription.status === 'active' && (
+                              <Button variant="ghost" size="icon" onClick={() => handleStopPrescription(prescription.id)}>
+                                <StopCircle className="h-4 w-4 text-destructive" />
+                              </Button>
+                            )}
+                            <Button variant="ghost" size="icon" onClick={() => openDialog('prescription', prescription)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm">Dosage: {prescription.dosage}</p>
-                      <p className="text-sm">Frequency: {prescription.frequency}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Prescribed: {prescription.prescribed_date}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm">Dosage: {prescription.dosage}</p>
+                        <p className="text-sm">Frequency: {prescription.frequency}</p>
+                        {daysTotal > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            Day {Math.min(daysElapsed, daysTotal)} of {daysTotal}
+                          </p>
+                        )}
+                        <p className="text-sm text-muted-foreground">
+                          Prescribed: {prescription.prescribed_date}
+                        </p>
+                        {prescription.end_date && (
+                          <p className="text-xs text-muted-foreground">
+                            Ended: {prescription.end_date}
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </TabsContent>
 
               <TabsContent value="notes" className="space-y-4">
