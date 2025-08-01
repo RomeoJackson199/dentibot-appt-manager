@@ -8,12 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Search, Plus, FileText, Pill, FolderOpen, Pencil, StickyNote } from 'lucide-react';
+import { Search, Plus, FileText, Pill, FolderOpen, Pencil, StickyNote, Calendar } from 'lucide-react';
 import MedicalDossier from './MedicalDossier';
 import { useToast } from '@/hooks/use-toast';
 import TreatmentPlanForm from './TreatmentPlanForm';
 import MedicalRecordForm from './MedicalRecordForm';
 import PrescriptionForm from './PrescriptionForm';
+import AppointmentForm from './AppointmentForm';
 import PatientNotes from './PatientNotes';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
@@ -69,7 +70,7 @@ export default function PatientManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogType, setDialogType] = useState<'treatment' | 'record' | 'prescription'>('treatment');
+  const [dialogType, setDialogType] = useState<'treatment' | 'record' | 'prescription' | 'appointment'>('treatment');
 
   let dentistId = '46067bae-18f6-4769-b8e4-be48cc18d273';
   if (profile?.email !== 'romeojackson199@gmail.com' && dentist?.id) {
@@ -175,7 +176,10 @@ export default function PatientManagement() {
 
   const [editingData, setEditingData] = useState<any>(null);
 
-  const openDialog = (type: 'treatment' | 'record' | 'prescription', data?: any) => {
+  const openDialog = (
+    type: 'treatment' | 'record' | 'prescription' | 'appointment',
+    data?: any
+  ) => {
     setDialogType(type);
     setEditingData(data || null);
     setDialogOpen(true);
@@ -260,6 +264,12 @@ export default function PatientManagement() {
                     </Button>
                   </DialogTrigger>
                   <DialogTrigger asChild>
+                    <Button variant="outline" onClick={() => openDialog('appointment')}>
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Appointment
+                    </Button>
+                  </DialogTrigger>
+                  <DialogTrigger asChild>
                     <Button variant="outline" onClick={() => openDialog('record')}>
                       <FileText className="h-4 w-4 mr-2" />
                       Medical Record
@@ -278,6 +288,7 @@ export default function PatientManagement() {
                         {dialogType === 'treatment' && (editingData ? 'Edit Treatment Plan' : 'New Treatment Plan')}
                         {dialogType === 'record' && (editingData ? 'Edit Medical Record' : 'New Medical Record')}
                         {dialogType === 'prescription' && (editingData ? 'Edit Prescription' : 'New Prescription')}
+                        {dialogType === 'appointment' && 'New Appointment'}
                       </DialogTitle>
                     </DialogHeader>
                     
@@ -302,6 +313,14 @@ export default function PatientManagement() {
                         patientId={selectedPatient.id}
                         dentistId={dentistId}
                         prescription={editingData as any}
+                        onSuccess={handleFormSuccess}
+                      />
+                    )}
+                    {dialogType === 'appointment' && (
+                      <AppointmentForm
+                        patientId={selectedPatient.id}
+                        dentistId={dentistId}
+                        treatmentPlans={treatmentPlans}
                         onSuccess={handleFormSuccess}
                       />
                     )}

@@ -266,7 +266,6 @@ export function DentistDashboard() {
     (apt.reason?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
 
   const filteredPending = pendingAppointments.filter(filterMatch);
-  const filteredAccepted = acceptedAppointments.filter(filterMatch);
 
   return (
     <div className="space-y-6">
@@ -305,19 +304,12 @@ export function DentistDashboard() {
       </div>
 
       <Tabs defaultValue="pending" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="pending" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Pending Requests
             {pendingAppointments.length > 0 && (
               <Badge variant="secondary">{pendingAppointments.length}</Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="accepted" className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4" />
-            Accepted Appointments
-            {acceptedAppointments.length > 0 && (
-              <Badge variant="secondary">{acceptedAppointments.length}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="patients" className="flex items-center gap-2">
@@ -358,30 +350,6 @@ export function DentistDashboard() {
           )}
         </TabsContent>
 
-        <TabsContent value="accepted" className="space-y-4">
-          {acceptedAppointments.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <CheckCircle className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Accepted Appointments</h3>
-                <p className="text-muted-foreground text-center">
-                  Accept some pending requests to see them here.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredAccepted.map((appointment) => (
-                <AppointmentCard
-                  key={appointment.id}
-                  appointment={appointment}
-                  type="accepted"
-                  onViewPatient={handleViewPatient}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
 
         <TabsContent value="patients" className="space-y-4">
           <PatientManagement />

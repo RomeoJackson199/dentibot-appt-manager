@@ -275,41 +275,6 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
         </CardContent>
       </Card>
 
-      {/* Past Prescriptions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Pill className="h-5 w-5" />
-            Past Prescriptions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {prescriptions.filter(p => p.status !== 'active').length > 0 ? (
-            <div className="space-y-3">
-              {prescriptions
-                .filter(p => p.status !== 'active')
-                .map((prescription) => (
-                  <div key={prescription.id} className="border rounded-lg p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium">{prescription.medication_name}</h4>
-                      <Badge variant="secondary">{prescription.status}</Badge>
-                    </div>
-                    <p className="text-sm">
-                      {prescription.dosage} - {prescription.frequency}
-                    </p>
-                    {prescription.instructions && (
-                      <p className="text-xs text-muted-foreground">
-                        {prescription.instructions}
-                      </p>
-                    )}
-                  </div>
-                ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground">No past prescriptions</p>
-          )}
-        </CardContent>
-      </Card>
 
       {nextAppointment && (
         <Card>
@@ -379,43 +344,6 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
         </CardContent>
       </Card>
 
-      {/* Recent Medical Records */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Recent Medical Records
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {medicalRecords.slice(0, 3).length > 0 ? (
-            <div className="space-y-3">
-              {medicalRecords.slice(0, 3).map((record) => (
-                <div key={record.id} className="border rounded-lg p-3">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-medium">{record.title}</h4>
-                    <Badge variant="outline">{record.record_type}</Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-1">
-                    Visit: {record.visit_date}
-                  </p>
-                  {record.findings && (
-                    <p className="text-sm">{record.findings}</p>
-                  )}
-                </div>
-              ))}
-              {medicalRecords.length > 3 && (
-                <p className="text-sm text-muted-foreground">
-                  +{medicalRecords.length - 3} more records
-                </p>
-              )}
-            </div>
-          ) : (
-            <p className="text-muted-foreground">No medical records</p>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Active Prescriptions */}
       <Card>
         <CardHeader>
@@ -449,6 +377,46 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
           )}
         </CardContent>
       </Card>
+
+      {/* Upcoming Appointments */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Upcoming Appointments
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {appointments.filter(a => new Date(a.appointment_date) > new Date()).length > 0 ? (
+            <div className="space-y-3">
+              {appointments
+                .filter(a => new Date(a.appointment_date) > new Date())
+                .slice(0, 3)
+                .map((appointment) => (
+                  <div key={appointment.id} className="border rounded-lg p-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <p className="font-medium">
+                        {new Date(appointment.appointment_date).toLocaleDateString()}
+                      </p>
+                      <Badge variant={
+                        appointment.status === 'confirmed' ? 'default' :
+                        appointment.status === 'pending' ? 'secondary' : 'destructive'
+                      }>
+                        {appointment.status}
+                      </Badge>
+                    </div>
+                    {appointment.reason && (
+                      <p className="text-sm">{appointment.reason}</p>
+                    )}
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground">No upcoming appointments</p>
+          )}
+        </CardContent>
+      </Card>
+
 
       {/* Recent Appointments */}
       <Card>
@@ -487,6 +455,42 @@ export default function MedicalDossier({ patientId, dentistId }: MedicalDossierP
             </div>
           ) : (
             <p className="text-muted-foreground">No appointments</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Past Prescriptions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Pill className="h-5 w-5" />
+            Past Prescriptions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {prescriptions.filter(p => p.status !== 'active').length > 0 ? (
+            <div className="space-y-3">
+              {prescriptions
+                .filter(p => p.status !== 'active')
+                .map((prescription) => (
+                  <div key={prescription.id} className="border rounded-lg p-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-medium">{prescription.medication_name}</h4>
+                      <Badge variant="secondary">{prescription.status}</Badge>
+                    </div>
+                    <p className="text-sm">
+                      {prescription.dosage} - {prescription.frequency}
+                    </p>
+                    {prescription.instructions && (
+                      <p className="text-xs text-muted-foreground">
+                        {prescription.instructions}
+                      </p>
+                    )}
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground">No past prescriptions</p>
           )}
         </CardContent>
       </Card>
