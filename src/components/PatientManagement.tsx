@@ -57,6 +57,14 @@ interface Prescription {
   prescribed_date: string;
 }
 
+interface Appointment {
+  id: string;
+  appointment_date: string;
+  reason?: string;
+  status: string;
+  notes?: string;
+}
+
 export default function PatientManagement() {
   const { user } = useAuth();
   const { profile, dentist } = useProfile();
@@ -67,6 +75,8 @@ export default function PatientManagement() {
   const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [dossierRefreshKey, setDossierRefreshKey] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -161,9 +171,18 @@ export default function PatientManagement() {
         .eq('dentist_id', dentistIdParam)
         .order('prescribed_date', { ascending: false });
 
+      // Fetch appointments
+      const { data: appointmentData } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('patient_id', patientId)
+        .eq('dentist_id', dentistIdParam)
+        .order('appointment_date', { ascending: true });
+
       setTreatmentPlans(treatmentData || []);
       setMedicalRecords(recordData || []);
       setPrescriptions(prescriptionData || []);
+      setAppointments(appointmentData || []);
     } catch (error: any) {
       console.error('Error fetching patient data:', error);
     }
@@ -191,6 +210,7 @@ export default function PatientManagement() {
     if (selectedPatient) {
       fetchPatientData(selectedPatient.id);
     }
+    setDossierRefreshKey((k) => k + 1);
   };
 
   if (loading) {
@@ -336,7 +356,7 @@ export default function PatientManagement() {
                   Medical Dossier
                 </TabsTrigger>
                 <TabsTrigger value="treatment-plans">Treatment Plans</TabsTrigger>
-                <TabsTrigger value="medical-records">Medical Records</TabsTrigger>
+                <TabsTrigger value="appointments">Appointments</TabsTrigger>
                 <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
                 <TabsTrigger value="notes" className="flex items-center gap-2">
                   <StickyNote className="h-4 w-4" />
@@ -345,9 +365,10 @@ export default function PatientManagement() {
               </TabsList>
 
               <TabsContent value="dossier" className="space-y-4">
-                <MedicalDossier 
-                  patientId={selectedPatient.id} 
-                  dentistId={dentistId} 
+                <MedicalDossier
+                  key={dossierRefreshKey}
+                  patientId={selectedPatient.id}
+                  dentistId={dentistId}
                 />
               </TabsContent>
 
@@ -384,27 +405,21 @@ export default function PatientManagement() {
                 ))}
               </TabsContent>
 
-              <TabsContent value="medical-records" className="space-y-4">
-                {medicalRecords.map((record) => (
-                  <Card key={record.id}>
+              <TabsContent value="appointments" className="space-y-4">
+                {appointments.map((apt) => (
+                  <Card key={apt.id}>
                     <CardHeader>
                       <div className="flex justify-between items-start">
-                        <CardTitle className="text-lg">{record.title}</CardTitle>
-                        <div className="flex gap-2 items-center">
-                          <Badge variant="outline">{record.record_type}</Badge>
-                          <Button variant="ghost" size="icon" onClick={() => openDialog('record', record)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <CardTitle className="text-lg">
+                          {new Date(apt.appointment_date).toLocaleString()}
+                        </CardTitle>
+                        <Badge variant={apt.status === 'confirmed' ? 'default' : apt.status === 'pending' ? 'secondary' : 'outline'}>
+                          {apt.status}
+                        </Badge>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Visit Date: {record.visit_date}
-                      </p>
-                      {record.description && (
-                        <p className="text-sm">{record.description}</p>
-                      )}
+                      {apt.reason && <p className="text-sm">{apt.reason}</p>}
                     </CardContent>
                   </Card>
                 ))}
