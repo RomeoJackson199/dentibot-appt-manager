@@ -49,7 +49,9 @@ export default function AppointmentForm({ patientId, dentistId, treatmentPlans, 
   };
 
   const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    const processedValue =
+      field === 'treatment_plan_id' && value === 'none' ? '' : value;
+    setFormData(prev => ({ ...prev, [field]: processedValue }));
   };
 
   return (
@@ -92,7 +94,7 @@ export default function AppointmentForm({ patientId, dentistId, treatmentPlans, 
               <SelectValue placeholder="None" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">None</SelectItem>
+              <SelectItem value="none">None</SelectItem>
               {treatmentPlans.map(plan => (
                 <SelectItem key={plan.id} value={plan.id}>{plan.title}</SelectItem>
               ))}
