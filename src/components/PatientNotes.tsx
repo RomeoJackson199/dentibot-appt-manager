@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/hooks/use-toast';
 
 interface PatientNote {
   id: string;
@@ -18,62 +16,19 @@ interface PatientNotesProps {
 }
 
 export default function PatientNotes({ patientId, dentistId }: PatientNotesProps) {
-  const { toast } = useToast();
   const [notes, setNotes] = useState<PatientNote[]>([]);
-  const [loading, setLoading] = useState(true);
   const [newNote, setNewNote] = useState('');
 
-  useEffect(() => {
-    fetchNotes();
-  }, [patientId]);
-
-  const fetchNotes = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('notes')
-        .select('*')
-        .eq('patient_id', patientId)
-        .eq('dentist_id', dentistId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setNotes(data || []);
-    } catch (error) {
-      console.error('Error fetching notes:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load notes',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const addNote = async () => {
+  const addNote = () => {
     if (!newNote.trim()) return;
-    try {
-      const { data, error } = await supabase
-        .from('notes')
-        .insert({
-          patient_id: patientId,
-          dentist_id: dentistId,
-          content: newNote.trim()
-        })
-        .select('*')
-        .single();
-      if (error) throw error;
-      setNotes((prev) => [data, ...prev]);
-      setNewNote('');
-    } catch (error) {
-      console.error('Error adding note:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to add note',
-        variant: 'destructive'
-      });
-    }
+    
+    const newNoteObj: PatientNote = {
+      id: crypto.randomUUID(),
+      content: newNote.trim(),
+      created_at: new Date().toISOString()
+    };
+    setNotes((prev) => [newNoteObj, ...prev]);
+    setNewNote('');
   };
 
   return (
@@ -90,9 +45,7 @@ export default function PatientNotes({ patientId, dentistId }: PatientNotesProps
         </Button>
       </div>
       <ScrollArea className="h-60 pr-2">
-        {loading ? (
-          <div className="text-center text-muted-foreground">Loading notes...</div>
-        ) : notes.length > 0 ? (
+        {notes.length > 0 ? (
           <div className="space-y-2">
             {notes.map((note) => (
               <Card key={note.id}>
