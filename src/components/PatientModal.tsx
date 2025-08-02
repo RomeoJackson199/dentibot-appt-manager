@@ -55,7 +55,6 @@ export function PatientModal({
   open, 
   onClose, 
   onSaveSummary,
-  onComplete,
   loading = false 
 }: PatientModalProps) {
   const [summary, setSummary] = useState('');

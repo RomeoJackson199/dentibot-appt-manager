@@ -1,4 +1,4 @@
-import { Calendar, Clock, User, AlertTriangle, Check, X, Eye, CheckCircle, Activity } from 'lucide-react';
+import { Calendar, Clock, User, AlertTriangle, Check, X, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,12 +11,6 @@ interface Appointment {
   appointment_date: string;
   reason?: string;
   notes?: string;
-  symptoms?: {
-    pain_level: number | null;
-    has_swelling: boolean | null;
-    has_bleeding: boolean | null;
-    duration_symptoms: string | null;
-  } | null;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   urgency: 'low' | 'medium' | 'high' | 'emergency';
   patient_id: string;
@@ -30,7 +24,6 @@ interface AppointmentCardProps {
   onAccept?: (appointmentId: string) => void;
   onReject?: (appointmentId: string) => void;
   onViewPatient?: (appointment: Appointment) => void;
-  onComplete?: (appointment: Appointment) => void;
   loading?: boolean;
 }
 
@@ -54,7 +47,6 @@ export function AppointmentCard({
   onAccept, 
   onReject, 
   onViewPatient,
-  onComplete,
   loading = false 
 }: AppointmentCardProps) {
   const appointmentDate = new Date(appointment.appointment_date);
@@ -107,29 +99,6 @@ export function AppointmentCard({
           </div>
         )}
 
-        {appointment.symptoms && (
-          <div>
-            <p className="font-medium text-sm mb-1 flex items-center gap-1">
-              <Activity className="h-4 w-4 text-blue-500" />
-              Symptoms:
-            </p>
-            <div className="text-sm text-muted-foreground space-y-1">
-              {appointment.symptoms.pain_level !== null && (
-                <p>Pain level: {appointment.symptoms.pain_level}/10</p>
-              )}
-              {appointment.symptoms.has_swelling !== null && (
-                <p>{appointment.symptoms.has_swelling ? 'Swelling present' : 'No swelling'}</p>
-              )}
-              {appointment.symptoms.has_bleeding !== null && (
-                <p>{appointment.symptoms.has_bleeding ? 'Bleeding present' : 'No bleeding'}</p>
-              )}
-              {appointment.symptoms.duration_symptoms && (
-                <p>Duration: {appointment.symptoms.duration_symptoms}</p>
-              )}
-            </div>
-          </div>
-        )}
-
         <div className="flex gap-2 pt-2">
           {type === 'pending' ? (
             <>
@@ -163,27 +132,15 @@ export function AppointmentCard({
               </Button>
             </>
           ) : (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onViewPatient?.(appointment)}
-                className="flex items-center gap-1"
-              >
-                <Eye className="h-4 w-4" />
-                View Patient
-              </Button>
-              {appointment.status === 'confirmed' && onComplete && (
-                <Button
-                  size="sm"
-                  onClick={() => onComplete(appointment)}
-                  className="flex items-center gap-1"
-                >
-                  <CheckCircle className="h-4 w-4" />
-                  Complete
-                </Button>
-              )}
-            </>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onViewPatient?.(appointment)}
+              className="flex items-center gap-1"
+            >
+              <Eye className="h-4 w-4" />
+              View Patient
+            </Button>
           )}
         </div>
       </CardContent>

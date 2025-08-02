@@ -21,24 +21,24 @@ export default function AppointmentForm({ patientId, dentistId, treatmentPlans, 
     appointment_date: new Date().toISOString().slice(0,16),
     reason: '',
     notes: '',
-    status: 'pending' as 'pending' | 'confirmed' | 'completed' | 'cancelled',
-    treatment_plan_id: '',
-    duration_minutes: 60
+    status: 'pending',
+    treatment_plan_id: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.from('appointments').insert({
-      patient_id: patientId,
-      dentist_id: dentistId,
-      appointment_date: formData.appointment_date,
-      reason: formData.reason,
-      notes: formData.notes,
-      status: formData.status,
-      duration_minutes: formData.duration_minutes,
-      treatment_plan_id: formData.treatment_plan_id || null
-    });
+    const { error } = await supabase.from('appointments').insert([
+      {
+        patient_id: patientId,
+        dentist_id: dentistId,
+        appointment_date: formData.appointment_date,
+        reason: formData.reason,
+        notes: formData.notes,
+        status: formData.status,
+        treatment_plan_id: formData.treatment_plan_id || null
+      }
+    ]);
     if (error) {
       toast({ title: 'Error', description: 'Failed to create appointment', variant: 'destructive' });
     } else {
@@ -74,17 +74,6 @@ export default function AppointmentForm({ patientId, dentistId, treatmentPlans, 
         <div className="col-span-2">
           <Label htmlFor="notes">Notes</Label>
           <Textarea id="notes" value={formData.notes} onChange={e => handleChange('notes', e.target.value)} rows={3} />
-        </div>
-        <div>
-          <Label htmlFor="duration_minutes">Duration (minutes)</Label>
-          <Input
-            id="duration_minutes"
-            type="number"
-            value={formData.duration_minutes}
-            onChange={e => handleChange('duration_minutes', e.target.value)}
-            min="15"
-            step="15"
-          />
         </div>
         <div>
           <Label htmlFor="status">Status</Label>
