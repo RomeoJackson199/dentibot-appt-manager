@@ -398,7 +398,18 @@ export function DentistDashboard() {
         </TabsContent>
 
         <TabsContent value="agenda" className="space-y-4">
-          <Agenda />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {acceptedAppointments.map((appointment) => (
+              <AppointmentCard
+                key={appointment.id}
+                appointment={appointment}
+                type="accepted"
+                onViewPatient={handleViewPatient}
+                onComplete={handleStartCompletion}
+                loading={false}
+              />
+            ))}
+          </div>
         </TabsContent>
 
         <TabsContent value="completed" className="space-y-4">
