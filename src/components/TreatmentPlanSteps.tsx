@@ -41,7 +41,7 @@ export default function TreatmentPlanSteps({ planId }: TreatmentPlanStepsProps) 
     setSteps(updated);
     await supabase
       .from('treatment_plans')
-      .update({ treatment_steps: updated })
+      .update({ treatment_steps: updated as any })
       .eq('id', planId);
   };
 
